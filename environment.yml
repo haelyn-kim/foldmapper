@@ -1,0 +1,26 @@
+name: foldmapper
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.9
+  - pip
+  # Core numerics
+  - numpy=2.0.2
+  - scipy=1.13
+  - pandas=2.3
+  - python-dateutil=2.9
+  - pyyaml=6.0
+  - tqdm=4.67
+  # Biology / I/O
+  - biopython=1.85
+  # PyTorch 2.3.1 (CUDA 12.1 build)
+  # For CPU-only: remove the pytorch-cuda line and change channel if needed.
+  - pytorch=2.3.1
+  - pytorch-cuda=12.1
+  # Foldseek (optional at inference time; required to regenerate profiles from scratch)
+  - foldseek
+  - pip:
+      - wandb==0.22.3

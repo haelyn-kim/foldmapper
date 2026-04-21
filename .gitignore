@@ -1,0 +1,31 @@
+*.pt
+*.pth
+*.ckpt
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+
+# Python packaging / editable-install artifacts
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+
+wandb/
+outputs/
+data/
+tmp/
+
+*.npy
+*.npz
+*.m8
+
+# Editor / env
+.env
+.vscode/
+.idea/

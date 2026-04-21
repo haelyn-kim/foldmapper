@@ -1,0 +1,29 @@
+# FoldMapper d_s1 = 256 + BLOSUM62 Stage-1 bias.
+# Corresponds to training/260214/4 in the original project.
+
+distill_hidden_dim: 256
+distill_edge_features: 128
+distill_encoder_layers: 3
+distill_k_neighbors: 30
+distill_augment_eps: 0.1
+
+hidden_dim: 512
+num_encoder_layers: 3
+num_decoder_layers: 3
+num_neighbors: 48
+backbone_noise: 0.2
+
+dropout: 0.1
+profile_dropout: 0.1
+
+use_blosum: true
+aa_factor: 1.4
+
+num_epochs: 200
+batch_size: 2000
+num_examples_per_epoch: 30000
+reload_data_every_n_epochs: 1
+save_model_every_n_epochs: 20
+gradient_norm: 0.5
+rescut: 3.5
+mixed_precision: true

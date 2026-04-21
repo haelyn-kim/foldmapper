@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "foldmapper"
+version = "0.1.0"
+description = "FoldMapper: structure-based evolutionary-profile inverse folding."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Haelyn Kim"},
+]
+dependencies = [
+  "numpy",
+  "torch",
+  "biopython",
+  "tqdm",
+  "pyyaml",
+  "python-dateutil",
+]
+
+[project.optional-dependencies]
+train = ["wandb"]
+
+[project.urls]
+Homepage = "https://github.com/haelyn-kim/foldmapper"
+Repository = "https://github.com/haelyn-kim/foldmapper"
+
+[tool.setuptools]
+packages = ["foldmapper"]
