@@ -21,8 +21,7 @@ DOI: *(to be assigned at paper acceptance)*
 from foldmapper import load_model_from_checkpoint
 
 # Architecture (use_blosum / s1_hidden_dim / hidden_dim) is inferred from the
-# state_dict automatically. Legacy checkpoints that still use the internal
-# research-code prefixes (distill_*) are remapped transparently.
+# state_dict automatically; older Stage-1 key prefixes are normalised on load.
 model, ckpt = load_model_from_checkpoint("foldmapper_d256_blosum.pt", device="cuda")
 print(model.config)
 ```

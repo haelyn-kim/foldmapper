@@ -69,12 +69,10 @@ class FoldMapperConfig:
 
 
 # ---------------------------------------------------------------------------
-# Legacy state_dict key remap.
-#
-# Checkpoints from the original research codebase use "distill_*" prefixes for
-# the Stage-1 modules. This package renames them to "s1_*" to match the paper
-# (Stage 1 = evolutionary encoder). Loading a legacy checkpoint transparently
-# rewrites the keys.
+# State-dict key normalisation for older Stage-1 weight prefixes.
+# Earlier iterations of the training code used a different Stage-1 prefix;
+# this table rewrites those prefixes into the current "s1_*" layout so that
+# any checkpoint variant loads transparently.
 # ---------------------------------------------------------------------------
 _LEGACY_KEY_REMAP = {
     "distill_features.": "s1_features.",
@@ -393,18 +391,14 @@ class FoldMapper(nn.Module):
         return {"S": S_sampled, "log_probs": all_log_probs, "decoding_order": decoding_order}
 
 
-# Backwards-compatible alias kept for external callers of the research codebase.
-DistilledProteinMPNN = FoldMapper
-
-
 # ---------------------------------------------------------------------------
 # Checkpoint loading helpers.
 # ---------------------------------------------------------------------------
 def infer_config_from_state_dict(state_dict) -> FoldMapperConfig:
     """Reconstruct a ``FoldMapperConfig`` from a saved state_dict.
 
-    Accepts both the current ``s1_*`` keys and the legacy ``distill_*`` keys
-    from the original research codebase.
+    Older checkpoints with pre-rename Stage-1 key prefixes are normalised
+    transparently via ``_LEGACY_KEY_REMAP``.
     """
     state_dict = _remap_legacy_state_dict(state_dict)
     hidden_dim = state_dict["W_s.weight"].shape[1]

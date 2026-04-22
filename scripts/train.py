@@ -62,8 +62,8 @@ def build_parser():
     # Data paths
     p.add_argument("--path-for-training-data", dest="path_for_training_data", required=True,
                    help="Directory with list.csv, valid_clusters_ids.txt, test_clusters_ids.txt.")
-    p.add_argument("--pdb-root", dest="pdb_root", required=True, help="PDB .pt shards root.")
-    p.add_argument("--ted-root", dest="ted_root", required=True, help="TED .pt shards root.")
+    p.add_argument("--ted-root", dest="ted_root", required=True,
+                   help="Root directory of TED (and any other non-PDB) .pt shards.")
     p.add_argument("--ted-metadata", dest="ted_metadata", required=True)
     p.add_argument("--pdb-metadata", dest="pdb_metadata", required=True)
     p.add_argument("--path-for-outputs", dest="path_for_outputs", default="./outputs")
@@ -171,8 +171,7 @@ def main():
         "LIST": f"{data_path}/list.csv",
         "VAL": f"{data_path}/valid_clusters_ids.txt",
         "TEST": f"{data_path}/test_clusters_ids.txt",
-        "DIR_OLD": args.pdb_root,
-        "DIR_NEW": args.ted_root,
+        "DIR_TED": args.ted_root,
         "TED_METADATA": args.ted_metadata,
         "TED_METADATA_DATA": ted_metadata_data,
         "PDB_METADATA": pdb_metadata,

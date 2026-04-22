@@ -447,7 +447,7 @@ def loader_pdb(item, params):
     is_pdb_format = "_" in chain_id and not is_ted_format and not chain_id.startswith("TEMP_")
 
     if is_ted_format:
-        pt_file = get_ted_file_path(chain_id, params["DIR_NEW"])
+        pt_file = get_ted_file_path(chain_id, params["DIR_TED"])
         if pt_file is None or not os.path.isfile(pt_file):
             return None
 
@@ -458,7 +458,7 @@ def loader_pdb(item, params):
             elif "TED_METADATA" in params:
                 ted_metadata = load_ted_metadata(params["TED_METADATA"])
 
-            related_files = find_related_ted_domains(chain_id, params["DIR_NEW"], ted_metadata)
+            related_files = find_related_ted_domains(chain_id, params["DIR_TED"], ted_metadata)
             if not related_files:
                 related_files = [pt_file]
 
@@ -541,7 +541,7 @@ def loader_pdb(item, params):
 
     elif not is_pdb_format:
         # Generic new-format entry (single file, not PDB_chain, not TED).
-        pt_file = os.path.join(params["DIR_NEW"], chain_id) + ".pt"
+        pt_file = os.path.join(params["DIR_TED"], chain_id) + ".pt"
         if os.path.isfile(pt_file):
             try:
                 data = torch.load(pt_file, map_location="cpu")

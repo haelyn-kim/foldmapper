@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Rewrite a legacy FoldMapper checkpoint into the paper-aligned key layout.
+"""Normalise a FoldMapper checkpoint into the current ``s1_*`` key layout.
 
-Checkpoints produced by earlier research-code iterations stored Stage-1 weights
-under ``distill_*`` prefixes. This script loads such a checkpoint, remaps the
-keys to the ``s1_*`` layout used by the packaged model, and re-saves it.
+Loads any supported checkpoint (including older ones with pre-rename Stage-1
+key prefixes) through ``load_model_from_checkpoint`` and re-saves it with the
+current key layout and a ``dataclasses.asdict(config)`` entry.
 
 Usage:
     python scripts/convert_checkpoint.py IN.pt OUT.pt
@@ -25,7 +25,7 @@ from foldmapper import load_model_from_checkpoint  # noqa: E402
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("src", help="Input .pt checkpoint (any key layout).")
+    parser.add_argument("src", help="Input .pt checkpoint (any supported layout).")
     parser.add_argument("dst", help="Output .pt checkpoint (s1_* key layout).")
     args = parser.parse_args()
 
@@ -38,12 +38,10 @@ def main():
     torch.save(out, args.dst)
 
     n_s1 = sum(1 for k in out["model_state_dict"] if k.startswith("s1_"))
-    n_legacy = sum(1 for k in out["model_state_dict"] if k.startswith("distill_"))
     print(
         f"wrote {args.dst}: use_blosum={model.config.use_blosum} "
         f"s1_hidden_dim={model.config.s1_hidden_dim} "
-        f"hidden_dim={model.config.hidden_dim} "
-        f"s1_keys={n_s1} legacy_keys={n_legacy}"
+        f"hidden_dim={model.config.hidden_dim} s1_keys={n_s1}"
     )
 
 
