@@ -1,11 +1,10 @@
-# FoldMapper d_s1 = 512 + BLOSUM62 Stage-1 bias.
-# Corresponds to training/260214/3 in the original project.
+# FoldMapper variant: d_s1 = 512 with BLOSUM62 substitution bias at node init.
 
-distill_hidden_dim: 512
-distill_edge_features: 128
-distill_encoder_layers: 3
-distill_k_neighbors: 30
-distill_augment_eps: 0.1
+s1_hidden_dim: 512
+s1_edge_features: 128
+s1_num_layers: 3
+s1_k_neighbors: 30
+s1_augment_eps: 0.1
 
 hidden_dim: 512
 num_encoder_layers: 3

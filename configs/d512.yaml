@@ -1,11 +1,10 @@
-# FoldMapper d_s1 = 512 variant, no BLOSUM62.
-# Corresponds to training/260214/1 in the original project.
+# FoldMapper variant: d_s1 = 512, no BLOSUM62 bias.
 
-distill_hidden_dim: 512
-distill_edge_features: 128
-distill_encoder_layers: 3
-distill_k_neighbors: 30
-distill_augment_eps: 0.1
+s1_hidden_dim: 512
+s1_edge_features: 128
+s1_num_layers: 3
+s1_k_neighbors: 30
+s1_augment_eps: 0.1
 
 hidden_dim: 512
 num_encoder_layers: 3

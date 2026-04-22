@@ -1,25 +1,24 @@
-# FoldMapper default variant (d_s1 = 256, no BLOSUM62).
-# Corresponds to training/260213/1 in the original project.
+# FoldMapper default variant: d_s1 = 256, no BLOSUM62 bias.
 
-# Stage 1 distillation encoder
-distill_hidden_dim: 256
-distill_edge_features: 128
-distill_encoder_layers: 3
-distill_k_neighbors: 30
-distill_augment_eps: 0.1
+# Stage 1 (evolutionary encoder)
+s1_hidden_dim: 256
+s1_edge_features: 128
+s1_num_layers: 3
+s1_k_neighbors: 30
+s1_augment_eps: 0.1
 
-# Stage 2 MPNN
+# Stage 2 (structure-conditioned MPNN)
 hidden_dim: 512
 num_encoder_layers: 3
 num_decoder_layers: 3
 num_neighbors: 48
 backbone_noise: 0.2
 
-# Regularization
+# Regularisation
 dropout: 0.1
 profile_dropout: 0.1
 
-# BLOSUM (off)
+# BLOSUM62 (off)
 use_blosum: false
 
 # Training defaults

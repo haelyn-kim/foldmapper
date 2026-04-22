@@ -22,12 +22,12 @@ pip install -e .
 
 ## Model variants
 
-| Variant           | `distill_hidden_dim` | BLOSUM62 Stage-1 bias | Config                          |
-|-------------------|----------------------|-----------------------|---------------------------------|
-| FoldMapper-d256   | 256                  | off                   | `configs/d256.yaml`             |
-| FoldMapper-d512   | 512                  | off                   | `configs/d512.yaml`             |
-| FoldMapper-d256-B | 256                  | on                    | `configs/d256_blosum.yaml`      |
-| FoldMapper-d512-B | 512                  | on                    | `configs/d512_blosum.yaml`      |
+| Variant           | `d_s1` | BLOSUM62 Stage-1 bias | Config                          |
+|-------------------|-------:|-----------------------|---------------------------------|
+| FoldMapper-d256   |    256 | off                   | `configs/d256.yaml`             |
+| FoldMapper-d512   |    512 | off                   | `configs/d512.yaml`             |
+| FoldMapper-d256-B |    256 | on                    | `configs/d256_blosum.yaml`      |
+| FoldMapper-d512-B |    512 | on                    | `configs/d512_blosum.yaml`      |
 
 Checkpoints are distributed separately. See `docs/checkpoints.md` for the
 variant ↔ Zenodo DOI mapping (available once the manuscript is accepted).

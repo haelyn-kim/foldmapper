@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Train FoldMapper.
 
-Adapted from the internal training script: paths are now CLI flags instead of
-hardcoded constants, and architecture is selected via flags or a YAML config.
+All paths are CLI flags; architecture is selected via flags or a YAML config.
 
 Typical call:
     python scripts/train.py \\
@@ -56,7 +55,8 @@ def build_parser():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # Config override
-    p.add_argument("--config", type=str, default=None, help="YAML with FoldMapperConfig fields + training defaults.")
+    p.add_argument("--config", type=str, default=None,
+                   help="YAML with FoldMapperConfig fields + training defaults.")
 
     # Data paths
     p.add_argument("--path-for-training-data", dest="path_for_training_data", required=True,
@@ -80,19 +80,25 @@ def build_parser():
     p.add_argument("--rescut", type=float, default=3.5)
     p.add_argument("--debug", action="store_true")
 
-    # Architecture
-    p.add_argument("--distill-hidden-dim", dest="distill_hidden_dim", type=int, default=256)
-    p.add_argument("--distill-edge-features", dest="distill_edge_features", type=int, default=128)
-    p.add_argument("--distill-encoder-layers", dest="distill_encoder_layers", type=int, default=3)
-    p.add_argument("--distill-k-neighbors", dest="distill_k_neighbors", type=int, default=30)
-    p.add_argument("--distill-augment-eps", dest="distill_augment_eps", type=float, default=0.1)
+    # Stage 1 (evolutionary encoder)
+    p.add_argument("--s1-hidden-dim", dest="s1_hidden_dim", type=int, default=256)
+    p.add_argument("--s1-edge-features", dest="s1_edge_features", type=int, default=128)
+    p.add_argument("--s1-num-layers", dest="s1_num_layers", type=int, default=3)
+    p.add_argument("--s1-k-neighbors", dest="s1_k_neighbors", type=int, default=30)
+    p.add_argument("--s1-augment-eps", dest="s1_augment_eps", type=float, default=0.1)
+
+    # Stage 2 (structure-conditioned MPNN)
     p.add_argument("--hidden-dim", dest="hidden_dim", type=int, default=512)
     p.add_argument("--num-encoder-layers", dest="num_encoder_layers", type=int, default=3)
     p.add_argument("--num-decoder-layers", dest="num_decoder_layers", type=int, default=3)
     p.add_argument("--num-neighbors", dest="num_neighbors", type=int, default=48)
     p.add_argument("--backbone-noise", dest="backbone_noise", type=float, default=0.2)
+
+    # Regularisation
     p.add_argument("--dropout", type=float, default=0.1)
     p.add_argument("--profile-dropout", dest="profile_dropout", type=float, default=0.1)
+
+    # BLOSUM62
     p.add_argument("--use-blosum", dest="use_blosum", action="store_true")
     p.add_argument("--aa-factor", dest="aa_factor", type=float, default=1.4)
 
@@ -189,11 +195,11 @@ def main():
     valid_loader = torch.utils.data.DataLoader(valid_set, worker_init_fn=worker_init_fn, **load_param)
 
     config = FoldMapperConfig(
-        distill_hidden_dim=args.distill_hidden_dim,
-        distill_edge_features=args.distill_edge_features,
-        distill_encoder_layers=args.distill_encoder_layers,
-        distill_k_neighbors=args.distill_k_neighbors,
-        distill_augment_eps=args.distill_augment_eps,
+        s1_hidden_dim=args.s1_hidden_dim,
+        s1_edge_features=args.s1_edge_features,
+        s1_num_layers=args.s1_num_layers,
+        s1_k_neighbors=args.s1_k_neighbors,
+        s1_augment_eps=args.s1_augment_eps,
         hidden_dim=args.hidden_dim,
         num_encoder_layers=args.num_encoder_layers,
         num_decoder_layers=args.num_decoder_layers,

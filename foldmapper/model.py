@@ -1,10 +1,16 @@
-"""FoldMapper: two-stage graph inverse-folding with an evolutionary-profile prior.
+"""FoldMapper: two-stage graph inverse folding with a structure-derived evolutionary profile prior.
 
-Stage 1  distillation encoder (k=30, edge=128) consumes a per-position Foldseek
-         alignment profile (optionally with a BLOSUM62 transform) along with the
-         backbone coordinates and emits distilled node features.
-Stage 2  ProteinMPNN-style encoder/decoder (k=48, edge=512) predicts the amino
-         acid sequence autoregressively.
+Stage 1 (evolutionary encoder) builds a k-nearest-neighbour graph over Calpha
+atoms (k=30, edge dimension 128) and projects the per-residue Foldseek
+alignment profile through W_p into node features of dimension ``d_s1``.
+Optionally, a BLOSUM62-transformed copy of the profile is added through W_t to
+provide a substitution prior. Three encoder layers refine the node/edge
+representations.
+
+Stage 2 (structure-conditioned MPNN) builds a separate k=48, edge=512 graph
+and uses the projected Stage-1 nodes as its initial node features. Three
+encoder layers operate on the full graph; three decoder layers sample the
+sequence autoregressively under a causal permutation mask.
 
 All four paper variants (d_s1 in {256, 512} x {no BLOSUM, +BLOSUM}) share this
 class; architecture is controlled by ``FoldMapperConfig``.
@@ -13,7 +19,7 @@ class; architecture is controlled by ``FoldMapperConfig``.
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from typing import Optional
 
 import torch
@@ -35,15 +41,15 @@ from .model_utils import (
 class FoldMapperConfig:
     """Architecture + training hyperparameters for FoldMapper."""
 
-    # Stage 1: distillation encoder
-    distill_hidden_dim: int = 256
-    distill_edge_features: int = 128
-    distill_encoder_layers: int = 3
-    distill_k_neighbors: int = 30
-    distill_augment_eps: float = 0.1
+    # Stage 1: evolutionary encoder
+    s1_hidden_dim: int = 256          # d_s1 in the paper
+    s1_edge_features: int = 128
+    s1_num_layers: int = 3
+    s1_k_neighbors: int = 30
+    s1_augment_eps: float = 0.1
 
-    # Stage 2: MPNN backbone encoder/decoder
-    hidden_dim: int = 512
+    # Stage 2: structure-conditioned MPNN
+    hidden_dim: int = 512             # d_s2 in the paper
     num_encoder_layers: int = 3
     num_decoder_layers: int = 3
     k_neighbors: int = 48
@@ -51,19 +57,47 @@ class FoldMapperConfig:
 
     # Regularization
     dropout: float = 0.1
-    profile_dropout: float = 0.1
+    profile_dropout: float = 0.1      # p_drop in the paper
 
     # Vocabulary
     num_letters: int = 21
     vocab: int = 21
 
-    # BLOSUM62 injection (Stage 1 node-init bias)
+    # BLOSUM62 substitution bias (Stage-1 node-init add-on)
     use_blosum: bool = False
     aa_factor: float = 1.4
 
 
+# ---------------------------------------------------------------------------
+# Legacy state_dict key remap.
+#
+# Checkpoints from the original research codebase use "distill_*" prefixes for
+# the Stage-1 modules. This package renames them to "s1_*" to match the paper
+# (Stage 1 = evolutionary encoder). Loading a legacy checkpoint transparently
+# rewrites the keys.
+# ---------------------------------------------------------------------------
+_LEGACY_KEY_REMAP = {
+    "distill_features.": "s1_features.",
+    "distill_W_p.": "s1_W_p.",
+    "distill_W_t.": "s1_W_t.",
+    "distill_W_e.": "s1_W_e.",
+    "distill_encoder.": "s1_encoder_layers.",
+}
+
+
+def _remap_legacy_state_dict(state_dict: dict) -> dict:
+    out = {}
+    for k, v in state_dict.items():
+        for old, new in _LEGACY_KEY_REMAP.items():
+            if k.startswith(old):
+                k = new + k[len(old):]
+                break
+        out[k] = v
+    return out
+
+
 class FoldMapper(nn.Module):
-    """FoldMapper / Distilled ProteinMPNN two-stage model."""
+    """FoldMapper two-stage inverse-folding network."""
 
     def __init__(self, config: Optional[FoldMapperConfig] = None, **overrides):
         super().__init__()
@@ -73,39 +107,40 @@ class FoldMapper(nn.Module):
             config = FoldMapperConfig(**{**asdict(config), **overrides})
         self.config = config
 
-        distill_hidden_dim = config.distill_hidden_dim
-        distill_edge_features = config.distill_edge_features
+        s1_hidden_dim = config.s1_hidden_dim
+        s1_edge_features = config.s1_edge_features
         hidden_dim = config.hidden_dim
         self.hidden_dim = hidden_dim
+        self.s1_hidden_dim = s1_hidden_dim
         self.profile_dropout = config.profile_dropout
         self.use_blosum = config.use_blosum
 
-        # -- Stage 1: distillation encoder --
-        self.distill_features = ProteinFeatures(
-            distill_edge_features,
-            distill_edge_features,
-            top_k=config.distill_k_neighbors,
-            augment_eps=config.distill_augment_eps,
+        # -- Stage 1: evolutionary encoder --
+        self.s1_features = ProteinFeatures(
+            s1_edge_features,
+            s1_edge_features,
+            top_k=config.s1_k_neighbors,
+            augment_eps=config.s1_augment_eps,
         )
-        self.distill_W_p = nn.Linear(config.vocab, distill_hidden_dim, bias=True)
+        self.s1_W_p = nn.Linear(config.vocab, s1_hidden_dim, bias=True)
         if config.use_blosum:
-            self.distill_W_t = nn.Linear(config.vocab, distill_hidden_dim, bias=True)
+            self.s1_W_t = nn.Linear(config.vocab, s1_hidden_dim, bias=True)
             self.register_buffer("blosum62_prob", get_blosum62_prob(config.aa_factor))
-        self.distill_W_e = nn.Linear(distill_edge_features, distill_hidden_dim, bias=True)
-        self.distill_encoder = nn.ModuleList(
+        self.s1_W_e = nn.Linear(s1_edge_features, s1_hidden_dim, bias=True)
+        self.s1_encoder_layers = nn.ModuleList(
             [
-                EncLayer(distill_hidden_dim, distill_hidden_dim * 2, dropout=config.dropout)
-                for _ in range(config.distill_encoder_layers)
+                EncLayer(s1_hidden_dim, s1_hidden_dim * 2, dropout=config.dropout)
+                for _ in range(config.s1_num_layers)
             ]
         )
 
-        # Projection into MPNN hidden dim
-        if distill_hidden_dim != hidden_dim:
-            self.projection = nn.Linear(distill_hidden_dim, hidden_dim, bias=True)
+        # Stage-1 -> Stage-2 dimension matching projection
+        if s1_hidden_dim != hidden_dim:
+            self.projection = nn.Linear(s1_hidden_dim, hidden_dim, bias=True)
         else:
             self.projection = nn.Identity()
 
-        # -- Stage 2: ProteinMPNN-style backbone encoder/decoder --
+        # -- Stage 2: structure-conditioned MPNN --
         self.features = ProteinFeatures(
             hidden_dim,
             hidden_dim,
@@ -133,20 +168,20 @@ class FoldMapper(nn.Module):
                 nn.init.xavier_uniform_(p)
 
     # ------------------------------------------------------------------
-    # Stage 1 encode
+    # Stage-1 node encoding
     # ------------------------------------------------------------------
     def _encode_profile(self, X, mask, residue_idx, chain_encoding_all, evo_profile):
         """Run Stage 1 and return an [B, L, hidden_dim] projected node tensor."""
-        E_d, E_idx_d = self.distill_features(X, mask, residue_idx, chain_encoding_all)
+        E_d, E_idx_d = self.s1_features(X, mask, residue_idx, chain_encoding_all)
         if self.use_blosum:
             transformed = evo_profile @ self.blosum62_prob  # [B, L, 21]
-            h_V_d = (self.distill_W_p(evo_profile) + self.distill_W_t(transformed)) * mask.unsqueeze(-1)
+            h_V_d = (self.s1_W_p(evo_profile) + self.s1_W_t(transformed)) * mask.unsqueeze(-1)
         else:
-            h_V_d = self.distill_W_p(evo_profile) * mask.unsqueeze(-1)
-        h_E_d = self.distill_W_e(E_d)
+            h_V_d = self.s1_W_p(evo_profile) * mask.unsqueeze(-1)
+        h_E_d = self.s1_W_e(E_d)
         mask_attend_d = gather_nodes(mask.unsqueeze(-1), E_idx_d).squeeze(-1)
         mask_attend_d = mask.unsqueeze(-1) * mask_attend_d
-        for layer in self.distill_encoder:
+        for layer in self.s1_encoder_layers:
             if self.training:
                 h_V_d, h_E_d = torch.utils.checkpoint.checkpoint(
                     layer, h_V_d, h_E_d, E_idx_d, mask, mask_attend_d
@@ -161,7 +196,7 @@ class FoldMapper(nn.Module):
     def forward(self, X, S, mask, chain_M, residue_idx, chain_encoding_all, evo_profile=None):
         device = X.device
 
-        # -- Stage 1 --
+        # Stage 1 with profile dropout (zero-initialised fallback during training).
         drop_profile = (
             self.training
             and self.profile_dropout > 0
@@ -172,7 +207,7 @@ class FoldMapper(nn.Module):
         else:
             h_V = torch.zeros(X.shape[0], X.shape[1], self.hidden_dim, device=device)
 
-        # -- Stage 2 encoder --
+        # Stage 2 encoder.
         E, E_idx = self.features(X, mask, residue_idx, chain_encoding_all)
         h_E = self.W_e(E)
         mask_attend = gather_nodes(mask.unsqueeze(-1), E_idx).squeeze(-1)
@@ -185,7 +220,7 @@ class FoldMapper(nn.Module):
             else:
                 h_V, h_E = layer(h_V, h_E, E_idx, mask, mask_attend)
 
-        # -- Stage 2 autoregressive decoder (teacher forced) --
+        # Stage 2 decoder (autoregressive, teacher-forced).
         h_S = self.W_s(S)
         h_ES = cat_neighbors_nodes(h_S, h_E, E_idx)
         h_EX_encoder = cat_neighbors_nodes(torch.zeros_like(h_S), h_E, E_idx)
@@ -237,15 +272,14 @@ class FoldMapper(nn.Module):
     ):
         """Autoregressive sampling. ``chain_M`` is 1 for positions to predict.
 
-        Returns a dict with ``S`` (sampled indices) and ``log_probs`` (for
-        teacher-forced perplexity, computed with the sampled sequence).
+        Returns a dict with ``S`` (sampled indices) and ``log_probs``.
 
-        NOTE: the current implementation assumes every masked position is
-        freshly sampled; visible positions (``chain_M == 0``) are filled with
-        the zero index rather than the native sequence. Single-chain
-        inverse-folding works correctly. To support partial-redesign (mixed
-        visible/masked contexts), pass native ``S`` through and restore it at
-        visible positions in the scatter step below.
+        The current implementation assumes every masked position is freshly
+        sampled; visible positions (``chain_M == 0``) are filled with the zero
+        index rather than the native sequence. Single-chain inverse folding
+        works correctly. For partial-redesign workflows (mixed
+        visible/masked), pass native ``S`` through and restore it at visible
+        positions in the scatter step.
         """
         device = X.device
         B, N_nodes = X.shape[0], X.shape[1]
@@ -359,23 +393,26 @@ class FoldMapper(nn.Module):
         return {"S": S_sampled, "log_probs": all_log_probs, "decoding_order": decoding_order}
 
 
-# ---------------------------------------------------------------------------
-# Backwards-compatible alias used in original training checkpoints.
-# ---------------------------------------------------------------------------
+# Backwards-compatible alias kept for external callers of the research codebase.
 DistilledProteinMPNN = FoldMapper
 
 
 # ---------------------------------------------------------------------------
-# Checkpoint loading helper: auto-detects architecture from state_dict.
+# Checkpoint loading helpers.
 # ---------------------------------------------------------------------------
 def infer_config_from_state_dict(state_dict) -> FoldMapperConfig:
-    """Reconstruct a ``FoldMapperConfig`` from a saved state_dict."""
-    hidden_dim = state_dict["W_s.weight"].shape[1]
-    distill_hidden_dim = state_dict["distill_W_e.weight"].shape[0]
-    distill_edge_features = state_dict["distill_W_e.weight"].shape[1]
+    """Reconstruct a ``FoldMapperConfig`` from a saved state_dict.
 
-    num_distill_layers = len(
-        {int(k.split(".")[1]) for k in state_dict if k.startswith("distill_encoder.")}
+    Accepts both the current ``s1_*`` keys and the legacy ``distill_*`` keys
+    from the original research codebase.
+    """
+    state_dict = _remap_legacy_state_dict(state_dict)
+    hidden_dim = state_dict["W_s.weight"].shape[1]
+    s1_hidden_dim = state_dict["s1_W_e.weight"].shape[0]
+    s1_edge_features = state_dict["s1_W_e.weight"].shape[1]
+
+    num_s1_layers = len(
+        {int(k.split(".")[1]) for k in state_dict if k.startswith("s1_encoder_layers.")}
     )
     num_encoder_layers = len(
         {int(k.split(".")[1]) for k in state_dict if k.startswith("encoder_layers.")}
@@ -383,26 +420,29 @@ def infer_config_from_state_dict(state_dict) -> FoldMapperConfig:
     num_decoder_layers = len(
         {int(k.split(".")[1]) for k in state_dict if k.startswith("decoder_layers.")}
     )
-    use_blosum = any(k.startswith("distill_W_t.") for k in state_dict)
+    use_blosum = any(k.startswith("s1_W_t.") for k in state_dict)
 
     return FoldMapperConfig(
-        distill_hidden_dim=distill_hidden_dim,
-        distill_edge_features=distill_edge_features,
-        distill_encoder_layers=num_distill_layers,
+        s1_hidden_dim=s1_hidden_dim,
+        s1_edge_features=s1_edge_features,
+        s1_num_layers=num_s1_layers,
         hidden_dim=hidden_dim,
         num_encoder_layers=num_encoder_layers,
         num_decoder_layers=num_decoder_layers,
         use_blosum=use_blosum,
-        # Eval-time defaults: disable augmentation.
+        # Eval defaults: disable training-time augmentation.
         augment_eps=0.0,
-        distill_augment_eps=0.0,
+        s1_augment_eps=0.0,
         dropout=0.0,
         profile_dropout=0.0,
     )
 
 
-def load_model_from_checkpoint(checkpoint_path: str, device: str = "cpu",
-                               config: Optional[FoldMapperConfig] = None):
+def load_model_from_checkpoint(
+    checkpoint_path: str,
+    device: str = "cpu",
+    config: Optional[FoldMapperConfig] = None,
+):
     """Load a ``FoldMapper`` from a training checkpoint.
 
     If ``config`` is None it is inferred from the state_dict (architectural
@@ -410,11 +450,10 @@ def load_model_from_checkpoint(checkpoint_path: str, device: str = "cpu",
     Returns ``(model, checkpoint_dict)``.
     """
     ckpt = torch.load(checkpoint_path, map_location=device)
-    state_dict = ckpt["model_state_dict"]
+    state_dict = _remap_legacy_state_dict(ckpt["model_state_dict"])
 
     if config is None:
         config = infer_config_from_state_dict(state_dict)
-        # k_neighbors is not recoverable from weights alone; pick checkpoint hint if any.
         k_hint = ckpt.get("num_edges", 48)
         config = FoldMapperConfig(**{**asdict(config), "k_neighbors": k_hint})
 

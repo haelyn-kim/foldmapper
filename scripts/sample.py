@@ -88,8 +88,8 @@ def main():
 
     model, _ = load_model_from_checkpoint(args.checkpoint, device=device)
     print(
-        f"[model] use_blosum={model.config.use_blosum}, distill_hidden={model.config.distill_hidden_dim},"
-        f" hidden={model.config.hidden_dim}",
+        f"[model] use_blosum={model.config.use_blosum}, s1_hidden_dim={model.config.s1_hidden_dim},"
+        f" hidden_dim={model.config.hidden_dim}",
         file=sys.stderr,
     )
 
