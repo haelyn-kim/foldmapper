@@ -5,9 +5,8 @@ Structure-based evolutionary-profile inverse folding.
 FoldMapper is a two-stage graph neural network for protein inverse folding.
 Stage 1 distils a per-residue evolutionary profile (obtained by Foldseek
 structural alignment of the query against a structure database) into node
-features over the backbone graph. Stage 2 is a ProteinMPNN-style
-encoder/decoder that autoregressively samples a sequence consistent with the
-backbone + profile.
+features over the backbone graph. Stage 2 is a graph encoder/decoder that
+autoregressively samples a sequence consistent with the backbone + profile.
 
 ## Installation
 
@@ -94,8 +93,7 @@ Wrapper scripts will be added alongside the camera-ready release.
 
 Training uses two data shards per protein: a `.pt` with backbone coords, the
 native sequence, and a cached `evo_profile` tensor in Foldseek AA order
-(`A C D E F G H I K L M N P Q R S T V W Y X`). The split lists and cluster
-files follow the ProteinMPNN convention.
+(`A C D E F G H I K L M N P Q R S T V W Y X`).
 
 ## Citation
 
@@ -108,11 +106,8 @@ files follow the ProteinMPNN convention.
 }
 ```
 
-## License
+## License & attribution
 
-FoldMapper is released under the Apache License 2.0; see `LICENSE`.
-
-This package incorporates code from
-[ProteinMPNN](https://github.com/dauparas/ProteinMPNN) (Dauparas et al., 2022)
-used under the MIT License. Attribution and the full upstream license text
-are in `NOTICE` and `THIRD_PARTY_LICENSES/ProteinMPNN.txt`.
+FoldMapper is released under the Apache License 2.0 (`LICENSE`). Portions
+are adapted from [ProteinMPNN](https://github.com/dauparas/ProteinMPNN)
+(Dauparas et al., 2022) under the MIT License; see `NOTICE` for details.

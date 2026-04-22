@@ -1,11 +1,8 @@
 """Training data loading utilities for FoldMapper.
 
-``StructureDataset``, ``StructureLoader``, ``worker_init_fn``, ``get_pdbs``,
-``PDB_dataset`` and ``build_training_clusters`` are adapted from ProteinMPNN
-(Dauparas et al., 2022) under the MIT License, extended here to consume the
-PDB + TED shard layout and the per-residue ``evo_profile`` tensor. See
-``NOTICE`` and ``THIRD_PARTY_LICENSES/ProteinMPNN.txt`` at the repository
-root for the full attribution.
+See ``NOTICE`` for third-party attributions. FoldMapper extends the data
+loader to consume the PDB + TED shard layout and a per-residue
+``evo_profile`` tensor.
 
 Data sources handled by ``loader_pdb``:
 
