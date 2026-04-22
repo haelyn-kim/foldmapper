@@ -176,7 +176,9 @@ def worker_init_fn(worker_id):
 
 
 # ---------------------------------------------------------------------------
-# NoamOpt is provided by model_utils; re-exported for backwards compatibility.
+# NoamOpt is defined in model_utils; re-exported here for scripts that
+# import it directly from foldmapper.utils (e.g. training scripts written
+# against the earlier module layout).
 # ---------------------------------------------------------------------------
 from .model_utils import NoamOpt, get_std_opt  # noqa: E402, F401
 
@@ -270,7 +272,7 @@ def get_pdbs(data_loader, repeat: int = 1, max_length: int = 10000, num_units: i
                             )
                     continue
 
-                # Raw-style entry (legacy path): rebuild per-chain dict from flat arrays.
+                # Flat-array format (older .pt shards with idx/xyz/masked keys): rebuild per-chain dict.
                 my_dict = {}
                 concat_seq = ""
                 mask_list = []
@@ -712,8 +714,10 @@ def loader_pdb(item, params):
 # ---------------------------------------------------------------------------
 def build_training_clusters(params, debug: bool = False):
     """Read cluster CSV and split into train / valid / test by cluster id."""
-    val_ids = {int(l) for l in open(params["VAL"]).readlines()}
-    test_ids = {int(l) for l in open(params["TEST"]).readlines()}
+    with open(params["VAL"]) as f:
+        val_ids = {int(l) for l in f.readlines()}
+    with open(params["TEST"]) as f:
+        test_ids = {int(l) for l in f.readlines()}
 
     if debug:
         val_ids = set()

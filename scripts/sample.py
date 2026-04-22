@@ -40,7 +40,7 @@ def build_parser():
     p.add_argument("--foldseek-topk", type=int, default=100, help="Top-k alignments for profile.")
     p.add_argument("--n-samples", type=int, default=10, help="Sequences to sample.")
     p.add_argument("--temperature", type=float, default=0.1, help="Sampling temperature (>0).")
-    p.add_argument("--seed", type=int, default=19720422)
+    p.add_argument("--seed", type=int, default=19720422, help="Random seed for reproducibility.")
     p.add_argument("--device", default=None, help="cuda | cpu (default: auto).")
     p.add_argument("--output-fasta", default=None, help="Write FASTA here; else stdout.")
     return p

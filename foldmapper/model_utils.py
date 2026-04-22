@@ -44,15 +44,6 @@ def featurize(batch, device):
     S = np.zeros([B, L_max], dtype=np.int32)
     evo_profile = np.zeros([B, L_max, 21], dtype=np.float32)
 
-    init_alphabet = [
-        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
-        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-    ]
-    extra_alphabet = [str(item) for item in list(np.arange(300))]
-    chain_letters = init_alphabet + extra_alphabet  # noqa: F841
-
     for i, b in enumerate(batch):
         masked_chains = list(b["masked_list"])
         visible_chains = list(b["visible_list"])

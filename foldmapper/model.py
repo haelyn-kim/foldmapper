@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, asdict
-from typing import Optional
+from typing import List, Optional
 
 import torch
 import torch.nn as nn
@@ -277,17 +277,22 @@ class FoldMapper(nn.Module):
         evo_profile=None,
         temperature: float = 0.1,
         randn: Optional[torch.Tensor] = None,
+        S: Optional[torch.Tensor] = None,
+        tied_groups: Optional[List[List[int]]] = None,
     ):
         """Autoregressive sampling. ``chain_M`` is 1 for positions to predict.
 
         Returns a dict with ``S`` (sampled indices) and ``log_probs``.
 
-        The current implementation assumes every masked position is freshly
-        sampled; visible positions (``chain_M == 0``) are filled with the zero
-        index rather than the native sequence. Single-chain inverse folding
-        works correctly. For partial-redesign workflows (mixed
-        visible/masked), pass native ``S`` through and restore it at visible
-        positions in the scatter step.
+        ``S`` is the native sequence tensor ``[B, N]`` used to fill fixed
+        positions (``chain_M == 0``). If omitted, fixed positions receive
+        index 0 (alanine), which is correct for single-chain design but
+        wrong for partial/binder/tied-oligomer design.
+
+        ``tied_groups`` is a list of absolute-position groups; all positions
+        within a group receive the same sampled amino acid. Used for
+        homo-oligomer design where chains must share one sequence. Designed
+        for B=1 inference; each group applies to every batch element equally.
         """
         device = X.device
         B, N_nodes = X.shape[0], X.shape[1]
@@ -330,6 +335,15 @@ class FoldMapper(nn.Module):
         S_sampled = torch.zeros(B, N_nodes, dtype=torch.int64, device=device)
         all_log_probs = torch.zeros(B, N_nodes, self.config.num_letters, device=device)
         h_V_stack = [h_V] + [torch.zeros_like(h_V) for _ in range(len(self.decoder_layers))]
+
+        # Tied-design: map each position to its partner positions in the group.
+        tied_lookup: dict = {}
+        if tied_groups:
+            for group in tied_groups:
+                for pos in group:
+                    tied_lookup[pos] = [p for p in group if p != pos]
+        forced_aa = torch.zeros(B, N_nodes, dtype=torch.int64, device=device)
+        force_mask = torch.zeros(B, N_nodes, dtype=torch.bool, device=device)
 
         hidden_dim = self.hidden_dim
         for t_ in range(N_nodes):
@@ -393,10 +407,36 @@ class FoldMapper(nn.Module):
                     log_probs_t.unsqueeze(1),
                 )
 
-            S_t = (S_t * chain_mask_gathered + 0 * (1.0 - chain_mask_gathered)).long()
+            if S is not None:
+                S_true_gathered = torch.gather(S, 1, t[:, None])
+            else:
+                S_true_gathered = torch.zeros_like(S_t)
+            S_t = (S_t * chain_mask_gathered + S_true_gathered * (1.0 - chain_mask_gathered)).long()
+
+            # For tied positions that were pre-filled when their primary was decoded,
+            # override the sampled AA with the forced value.
+            if tied_lookup:
+                force_gathered = torch.gather(force_mask, 1, t[:, None])
+                forced_val = torch.gather(forced_aa, 1, t[:, None])
+                S_t = torch.where(force_gathered, forced_val, S_t)
+
             temp_h = self.W_s(S_t)
             h_S.scatter_(1, t[:, None, None].repeat(1, 1, hidden_dim), temp_h)
             S_sampled.scatter_(1, t[:, None], S_t)
+
+            # Propagate sampled AA to tied partners immediately so the decoder
+            # can attend to them before their own step in the decoding order.
+            if tied_lookup:
+                for b_idx in range(B):
+                    pos = int(t[b_idx].item())
+                    if pos in tied_lookup:
+                        aa = int(S_t[b_idx, 0].item())
+                        h_emb = temp_h[b_idx, 0]
+                        for partner in tied_lookup[pos]:
+                            forced_aa[b_idx, partner] = aa
+                            force_mask[b_idx, partner] = True
+                            S_sampled[b_idx, partner] = aa
+                            h_S[b_idx, partner] = h_emb
 
         return {"S": S_sampled, "log_probs": all_log_probs, "decoding_order": decoding_order}
 
@@ -462,6 +502,6 @@ def load_model_from_checkpoint(
         config = FoldMapperConfig(**{**asdict(config), "k_neighbors": k_hint})
 
     model = FoldMapper(config)
-    model.load_state_dict(state_dict, strict=False)  # legacy keys are remapped inside
+    model.load_state_dict(state_dict, strict=False)  # strict=False silences warnings for stale keys not covered by the legacy remap
     model = model.to(device).eval()
     return model, ckpt
