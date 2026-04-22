@@ -1,25 +1,32 @@
 # FoldMapper variant: d_s1 = 512, no BLOSUM62 bias.
+# Hyperparameters match the values used in the paper's released checkpoints.
 
-s1_hidden_dim: 512
+# --- Stage 1 (evolutionary encoder) ---------------------------------------
+s1_hidden_dim: 512                # d_s1 in the paper
 s1_edge_features: 128
 s1_num_encoder_layers: 3
 s1_k_neighbors: 30
 s1_augment_eps: 0.1
 
-hidden_dim: 512
+# --- Stage 2 (structure-conditioned MPNN) ---------------------------------
+hidden_dim: 512                   # d_s2 in the paper
 num_encoder_layers: 3
 num_decoder_layers: 3
 num_neighbors: 48
 backbone_noise: 0.2
 
+# --- Regularisation --------------------------------------------------------
 dropout: 0.1
 profile_dropout: 0.1
 
+# --- BLOSUM62 (off) --------------------------------------------------------
 use_blosum: false
 
+# --- Training schedule -----------------------------------------------------
 num_epochs: 200
-batch_size: 2000
 num_examples_per_epoch: 30000
+batch_size: 2000                  # tokens-per-batch (sum of residue counts)
+max_protein_length: 10000
 reload_data_every_n_epochs: 1
 save_model_every_n_epochs: 20
 gradient_norm: 0.5

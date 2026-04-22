@@ -1,32 +1,39 @@
 # FoldMapper default variant: d_s1 = 256, no BLOSUM62 bias.
+# Hyperparameters match the values used in the paper's released checkpoints.
 
-# Stage 1 (evolutionary encoder)
-s1_hidden_dim: 256
+# --- Stage 1 (evolutionary encoder) ---------------------------------------
+s1_hidden_dim: 256                # d_s1 in the paper
 s1_edge_features: 128
 s1_num_encoder_layers: 3
-s1_k_neighbors: 30
-s1_augment_eps: 0.1
+s1_k_neighbors: 30                # Calpha k-NN for the Stage-1 graph
+s1_augment_eps: 0.1               # sigma (Angstrom) for Stage-1 backbone noise
 
-# Stage 2 (structure-conditioned MPNN)
-hidden_dim: 512
+# --- Stage 2 (structure-conditioned MPNN) ---------------------------------
+hidden_dim: 512                   # d_s2 in the paper
 num_encoder_layers: 3
 num_decoder_layers: 3
-num_neighbors: 48
-backbone_noise: 0.2
+num_neighbors: 48                 # Calpha k-NN for the Stage-2 graph
+backbone_noise: 0.2               # sigma (Angstrom) for Stage-2 backbone noise
 
-# Regularisation
+# --- Regularisation --------------------------------------------------------
 dropout: 0.1
-profile_dropout: 0.1
+profile_dropout: 0.1              # p_drop: zero-init fallback during training
 
-# BLOSUM62 (off)
+# --- BLOSUM62 (off) --------------------------------------------------------
 use_blosum: false
 
-# Training defaults
+# --- Training schedule -----------------------------------------------------
+# Optimiser is Adam(beta=(0.9, 0.98), eps=1e-9) with the Noam schedule
+# (warmup 4000 steps, scale factor 2). Those are not exposed here; see
+# foldmapper.model_utils.get_std_opt if you need to change them.
+
 num_epochs: 200
-batch_size: 2000
-num_examples_per_epoch: 30000
+num_examples_per_epoch: 30000     # random-shuffled structures loaded per epoch
+                                  # (sampling cap over the full training set)
+batch_size: 2000                  # tokens-per-batch (sum of residue counts)
+max_protein_length: 10000         # drop entries longer than this (tokens)
 reload_data_every_n_epochs: 1
 save_model_every_n_epochs: 20
-gradient_norm: 0.5
-rescut: 3.5
+gradient_norm: 0.5                # clip total grad norm
+rescut: 3.5                       # PDB resolution cutoff (Angstrom) at list.csv
 mixed_precision: true

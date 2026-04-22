@@ -77,7 +77,9 @@ def build_parser():
     p.add_argument("--batch-size", dest="batch_size", type=int, default=2000)
     p.add_argument("--max-protein-length", dest="max_protein_length", type=int, default=10000)
     p.add_argument("--gradient-norm", dest="gradient_norm", type=float, default=0.5)
-    p.add_argument("--mixed-precision", dest="mixed_precision", action="store_true", default=True)
+    p.add_argument("--mixed-precision", dest="mixed_precision",
+                   action=argparse.BooleanOptionalAction, default=True,
+                   help="Use torch.cuda.amp for forward/backward (disable with --no-mixed-precision).")
     p.add_argument("--rescut", type=float, default=3.5)
     p.add_argument("--debug", action="store_true")
 

@@ -29,3 +29,6 @@ tmp/
 .env
 .vscode/
 .idea/
+.*.swp
+.*.swo
+*~
