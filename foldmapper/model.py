@@ -166,6 +166,16 @@ class FoldMapper(nn.Module):
                 nn.init.xavier_uniform_(p)
 
     # ------------------------------------------------------------------
+    # State-dict loading: transparently normalise older Stage-1 key prefixes
+    # so both ``load_model_from_checkpoint`` and raw ``torch.load`` +
+    # ``model.load_state_dict`` paths handle any supported checkpoint.
+    # ------------------------------------------------------------------
+    def load_state_dict(self, state_dict, strict: bool = True, assign: bool = False):
+        return super().load_state_dict(
+            _remap_legacy_state_dict(state_dict), strict=strict, assign=assign,
+        )
+
+    # ------------------------------------------------------------------
     # Stage-1 node encoding
     # ------------------------------------------------------------------
     def _encode_profile(self, X, mask, residue_idx, chain_encoding_all, evo_profile):
@@ -444,7 +454,7 @@ def load_model_from_checkpoint(
     Returns ``(model, checkpoint_dict)``.
     """
     ckpt = torch.load(checkpoint_path, map_location=device)
-    state_dict = _remap_legacy_state_dict(ckpt["model_state_dict"])
+    state_dict = ckpt["model_state_dict"]
 
     if config is None:
         config = infer_config_from_state_dict(state_dict)
@@ -452,6 +462,6 @@ def load_model_from_checkpoint(
         config = FoldMapperConfig(**{**asdict(config), "k_neighbors": k_hint})
 
     model = FoldMapper(config)
-    model.load_state_dict(state_dict, strict=False)
+    model.load_state_dict(state_dict, strict=False)  # legacy keys are remapped inside
     model = model.to(device).eval()
     return model, ckpt
