@@ -1,6 +1,20 @@
 FoldMapper
 Copyright 2026 Haelyn Kim
 
-This product includes software developed by third parties.
-See the repository documentation for details.
+Licensed under the Apache License, Version 2.0. See the LICENSE file for
+the full text.
 
+------------------------------------------------------------------------------
+Third-party code incorporated into this project
+------------------------------------------------------------------------------
+
+This package incorporates code derived from ProteinMPNN
+(https://github.com/dauparas/ProteinMPNN, Dauparas et al., 2022) under the
+terms of the MIT License. The derived components are primarily the graph
+encoder/decoder layers, feature extraction, gather/concatenation helpers,
+training-time loss functions, the Noam learning-rate schedule, and the
+structure-dataset loader; they appear in foldmapper/model_utils.py and
+foldmapper/utils.py.
+
+The upstream MIT License, together with the list of derived components, is
+reproduced in THIRD_PARTY_LICENSES/ProteinMPNN.txt.

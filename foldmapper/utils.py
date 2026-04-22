@@ -1,19 +1,26 @@
 """Training data loading utilities for FoldMapper.
 
-Handles two data sources:
+``StructureDataset``, ``StructureLoader``, ``worker_init_fn``, ``get_pdbs``,
+``PDB_dataset`` and ``build_training_clusters`` are adapted from ProteinMPNN
+(Dauparas et al., 2022) under the MIT License, extended here to consume the
+PDB + TED shard layout and the per-residue ``evo_profile`` tensor. See
+``NOTICE`` and ``THIRD_PARTY_LICENSES/ProteinMPNN.txt`` at the repository
+root for the full attribution.
+
+Data sources handled by ``loader_pdb``:
 
 1. PDB shards: one ``.pt`` file per chain containing ``seq`` (string),
    ``xyz`` ([L, 4, 3] backbone atoms N/Calpha/C/O), and optionally
    ``evo_profile`` ([L, 21] in Foldseek amino acid ordering).
-2. TED shards: one ``.pt`` per domain (same layout). The original AlphaFold
-   model these domains are cut out of is encoded in the filename
-   (``AF-<UniProt>-F1-model_v<N>_TED<XX>``). Entries belonging to the same
-   parent model are discovered through ``ted_metadata``: ``{base_id: [file_path,
+2. TED shards: one ``.pt`` per domain (same layout). The parent AlphaFold
+   model is encoded in the filename
+   (``AF-<UniProt>-F1-model_v<N>_TED<XX>``); domains belonging to the same
+   parent are discovered through ``ted_metadata``: ``{base_id: [file_path,
    ...]}``.
 
-The training loader performs a per-sample assembly so that multi-domain TED
-proteins or multi-chain PDB entries expose the requested chain as ``masked``
-while the rest of the assembly acts as visible context.
+The loader performs a per-sample assembly so that multi-domain TED proteins
+or multi-chain PDB entries expose the requested chain as ``masked`` while
+the rest of the assembly acts as visible context.
 """
 
 from __future__ import annotations

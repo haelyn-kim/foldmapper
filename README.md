@@ -110,4 +110,9 @@ files follow the ProteinMPNN convention.
 
 ## License
 
-Apache-2.0. See `LICENSE`.
+FoldMapper is released under the Apache License 2.0; see `LICENSE`.
+
+This package incorporates code from
+[ProteinMPNN](https://github.com/dauparas/ProteinMPNN) (Dauparas et al., 2022)
+used under the MIT License. Attribution and the full upstream license text
+are in `NOTICE` and `THIRD_PARTY_LICENSES/ProteinMPNN.txt`.

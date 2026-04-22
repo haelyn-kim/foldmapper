@@ -1,7 +1,14 @@
 """Core layers and helpers shared by Stage 1 and Stage 2 of FoldMapper.
 
-Adapted from the ProteinMPNN reference implementation (Dauparas et al., 2022)
-with modifications for the evolutionary-profile input pathway.
+Most of this module (ProteinFeatures, EncLayer, DecLayer, the gather /
+cat_neighbors helpers, PositionWiseFeedForward, PositionalEncodings,
+NoamOpt, loss_nll, loss_smoothed, and the featurize core) is adapted from
+ProteinMPNN (Dauparas et al., 2022) under the MIT License. See
+``NOTICE`` and ``THIRD_PARTY_LICENSES/ProteinMPNN.txt`` at the repository
+root for the full attribution.
+
+FoldMapper-specific change in this file: ``featurize`` carries an optional
+``evo_profile`` tensor for the Stage-1 evolutionary input pathway.
 """
 
 from __future__ import annotations
