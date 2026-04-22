@@ -2,7 +2,7 @@
 
 s1_hidden_dim: 256
 s1_edge_features: 128
-s1_num_layers: 3
+s1_num_encoder_layers: 3
 s1_k_neighbors: 30
 s1_augment_eps: 0.1
 

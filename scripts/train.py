@@ -23,6 +23,7 @@ import queue
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict
 
 import numpy as np
 import torch
@@ -83,7 +84,7 @@ def build_parser():
     # Stage 1 (evolutionary encoder)
     p.add_argument("--s1-hidden-dim", dest="s1_hidden_dim", type=int, default=256)
     p.add_argument("--s1-edge-features", dest="s1_edge_features", type=int, default=128)
-    p.add_argument("--s1-num-layers", dest="s1_num_layers", type=int, default=3)
+    p.add_argument("--s1-num-encoder-layers", dest="s1_num_encoder_layers", type=int, default=3)
     p.add_argument("--s1-k-neighbors", dest="s1_k_neighbors", type=int, default=30)
     p.add_argument("--s1-augment-eps", dest="s1_augment_eps", type=float, default=0.1)
 
@@ -197,7 +198,7 @@ def main():
     config = FoldMapperConfig(
         s1_hidden_dim=args.s1_hidden_dim,
         s1_edge_features=args.s1_edge_features,
-        s1_num_layers=args.s1_num_layers,
+        s1_num_encoder_layers=args.s1_num_encoder_layers,
         s1_k_neighbors=args.s1_k_neighbors,
         s1_augment_eps=args.s1_augment_eps,
         hidden_dim=args.hidden_dim,
@@ -379,7 +380,7 @@ def main():
                 "noise_level": args.backbone_noise,
                 "model_state_dict": model.state_dict(),
                 "optimizer_state_dict": optimizer.optimizer.state_dict(),
-                "config": vars(config) if hasattr(config, "__dict__") else {},
+                "config": asdict(config),
             }
             torch.save(ckpt_dict, base_folder + "model_weights/epoch_last.pt")
             if (e_total + 1) % args.save_model_every_n_epochs == 0:

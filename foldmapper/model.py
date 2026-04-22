@@ -44,7 +44,7 @@ class FoldMapperConfig:
     # Stage 1: evolutionary encoder
     s1_hidden_dim: int = 256          # d_s1 in the paper
     s1_edge_features: int = 128
-    s1_num_layers: int = 3
+    s1_num_encoder_layers: int = 3
     s1_k_neighbors: int = 30
     s1_augment_eps: float = 0.1
 
@@ -130,7 +130,7 @@ class FoldMapper(nn.Module):
         self.s1_encoder_layers = nn.ModuleList(
             [
                 EncLayer(s1_hidden_dim, s1_hidden_dim * 2, dropout=config.dropout)
-                for _ in range(config.s1_num_layers)
+                for _ in range(config.s1_num_encoder_layers)
             ]
         )
 
@@ -425,7 +425,7 @@ def infer_config_from_state_dict(state_dict) -> FoldMapperConfig:
     return FoldMapperConfig(
         s1_hidden_dim=s1_hidden_dim,
         s1_edge_features=s1_edge_features,
-        s1_num_layers=num_s1_layers,
+        s1_num_encoder_layers=num_s1_layers,
         hidden_dim=hidden_dim,
         num_encoder_layers=num_encoder_layers,
         num_decoder_layers=num_decoder_layers,
