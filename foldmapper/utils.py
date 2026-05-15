@@ -37,6 +37,25 @@ from dateutil import parser
 
 
 # ---------------------------------------------------------------------------
+# Path resolution
+# ---------------------------------------------------------------------------
+def _resolve_data_path(p):
+    """Resolve a metadata path. If relative, prepend ``$FOLDMAPPER_DATA_BASE``.
+
+    Metadata distributed via the Zenodo record stores paths relative to the
+    materialized training subset; users set ``FOLDMAPPER_DATA_BASE`` to point
+    at their local copy. Absolute paths (legacy / local builds) pass through
+    unchanged.
+    """
+    if not p:
+        return p
+    if os.path.isabs(p):
+        return p
+    base = os.environ.get("FOLDMAPPER_DATA_BASE", "")
+    return os.path.join(base, p) if base else p
+
+
+# ---------------------------------------------------------------------------
 # TED metadata cache
 # ---------------------------------------------------------------------------
 _TED_METADATA_CACHE = None
@@ -418,7 +437,7 @@ def find_related_ted_domains(chain_id: str, base_dir: str, ted_metadata=None):
     base_id = match.group(1)
 
     if ted_metadata and base_id in ted_metadata:
-        return ted_metadata[base_id]
+        return [_resolve_data_path(p) for p in ted_metadata[base_id]]
 
     uniprot_match = re.match(r"AF-([A-Z0-9]+)-F\d+-model_v\d+", base_id)
     if not uniprot_match:
@@ -597,7 +616,7 @@ def loader_pdb(item, params):
         return None
 
     entry = pdb_metadata[chain_id]
-    chain_path = entry["chain_path"]
+    chain_path = _resolve_data_path(entry["chain_path"])
     other_chains = entry["other_chains"]
     pdb_id = entry["pdb_id"]
 
@@ -654,7 +673,7 @@ def loader_pdb(item, params):
         for other_ch in other_chains_selected:
             other_entry_id = f"{pdb_id}_{other_ch}"
             if other_entry_id in pdb_metadata:
-                other_path = pdb_metadata[other_entry_id]["chain_path"]
+                other_path = _resolve_data_path(pdb_metadata[other_entry_id]["chain_path"])
                 if os.path.isfile(other_path):
                     other_data = torch.load(other_path, map_location="cpu")
                     other_seq = other_data["seq"]

@@ -65,22 +65,28 @@ foldseek databases PDB100 /path/to/db tmp  # ~20 GB
 
 ## Training
 
-Reproduces the paper training run for any variant. Data pipeline (PDB/TED
-`.pt` shards with a cached `evo_profile` tensor per entry and metadata JSON
-files) must be built separately; see the "Data" section below for the expected
-layout.
+Reproduces the paper training run for any variant. The PDB/TED `.pt` shard
+dataset (per-protein backbone + `evo_profile` + metadata JSONs) is distributed
+as a separate Zenodo record — see the "Data" section below.
 
 ```bash
+# Prereq: source the Zenodo training-data record's config.env, which exports
+# SPLITS_DIR, METADATA_DIR, SUBSET_DIR, and FOLDMAPPER_DATA_BASE.
+export FOLDMAPPER_DATA_BASE="${SUBSET_DIR}"
 python scripts/train.py \
     --config configs/d256_blosum.yaml \
-    --path-for-training-data /path/to/dataset_splits/data \
-    --pdb-root /path/to/pt_with_profile/pdb \
-    --ted-root /path/to/pt_with_profile/ted \
-    --ted-metadata /path/to/ted_metadata.json \
-    --pdb-metadata /path/to/pdb_metadata.json \
+    --path-for-training-data "${SPLITS_DIR}" \
+    --ted-root "${SUBSET_DIR}/ted" \
+    --ted-metadata "${METADATA_DIR}/ted_metadata.json" \
+    --pdb-metadata "${METADATA_DIR}/pdb_metadata.json" \
     --path-for-outputs ./outputs \
     --use-wandb --wandb-project foldmapper
 ```
+
+PDB shard paths are resolved via `pdb_metadata.json` + `FOLDMAPPER_DATA_BASE`;
+TED shard paths combine `--ted-root` (for the initial existence check) with
+`ted_metadata.json` (for sibling-domain lookup, also resolved through
+`FOLDMAPPER_DATA_BASE`).
 
 ## Reproducing paper tables
 
@@ -91,8 +97,11 @@ Wrapper scripts will be added alongside the camera-ready release.
 
 ## Data
 
-Training uses two data shards per protein: a `.pt` with backbone coords, the
-native sequence, and a cached `evo_profile` tensor in Foldseek AA order
+The training-data record (cluster splits + per-chain metadata + the data-prep
+pipeline that materializes the `.pt` shard tree from PDB + TED sources) is
+released separately as a Zenodo deposit; see `docs/checkpoints.md` for the DOI
+mapping. Each `.pt` shard contains backbone coords, the native sequence, and a
+cached `evo_profile` tensor in Foldseek AA order
 (`A C D E F G H I K L M N P Q R S T V W Y X`).
 
 ## Citation

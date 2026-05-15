@@ -3,14 +3,19 @@
 
 All paths are CLI flags; architecture is selected via flags or a YAML config.
 
-Typical call:
+PDB shard paths are resolved through ``pdb_metadata.json`` + the
+``FOLDMAPPER_DATA_BASE`` environment variable (set to the directory the
+metadata's relative ``chain_path`` entries are relative to — for the Zenodo
+training-data record this is ``${SUBSET_DIR}``).
+
+Typical call (with the Zenodo training-data record sourced via ``config.env``):
+    export FOLDMAPPER_DATA_BASE="${SUBSET_DIR}"
     python scripts/train.py \\
         --config configs/d256_blosum.yaml \\
-        --path-for-training-data /path/to/dataset_splits/data \\
-        --pdb-root /path/to/pt_with_profile/pdb \\
-        --ted-root /path/to/pt_with_profile/ted \\
-        --ted-metadata /path/to/ted_metadata.json \\
-        --pdb-metadata /path/to/pdb_metadata.json \\
+        --path-for-training-data "${SPLITS_DIR}" \\
+        --ted-root "${SUBSET_DIR}/ted" \\
+        --ted-metadata "${METADATA_DIR}/ted_metadata.json" \\
+        --pdb-metadata "${METADATA_DIR}/pdb_metadata.json" \\
         --path-for-outputs ./outputs
 """
 
