@@ -53,6 +53,9 @@ case the profile is generated on the fly. If neither is supplied, the model
 runs in backbone-only mode (the same regime triggered by `profile_dropout`
 during training).
 
+For the other design tasks (binder redesign, tied homo-oligomer, fixed-residue
+motif scaffolding), see `examples/` — one runnable shell script per scenario.
+
 ## Foldseek database
 
 FoldMapper is trained and evaluated against the official Foldseek PDB100
@@ -65,18 +68,42 @@ foldseek databases PDB100 /path/to/db tmp  # ~20 GB
 
 ## Training
 
-Reproduces the paper training run for any variant. The PDB/TED `.pt` shard
-dataset (per-protein backbone + `evo_profile` + metadata JSONs) is distributed
-as a separate Zenodo record — see the "Data" section below.
+Reproduces the paper training run for any variant. The cluster splits, per-chain
+metadata, and the pipeline that materializes the PDB/TED `.pt` shard tree are
+distributed as a separate Zenodo record — see the "Data" section below.
+
+The shards that pipeline produces carry backbone coordinates and the native
+sequence. FoldMapper additionally conditions on a cached Foldseek profile, which
+is not part of the dataset record — generate it before training:
+
+```bash
+# Run Foldseek once per shard first (same parameters as scripts/make_profile.sh;
+# pinned Foldseek/PDB100 versions in docs/checkpoints.md), then attach profiles.
+# --manifest is a newline-separated list of absolute .pt paths; each shard is
+# rewritten under --output-dir at its path relative to --input-base, so the
+# shard tree layout is preserved.
+export SHARDS_WITH_PROFILE="${SUBSET_DIR}_with_profile"
+find "${SUBSET_DIR}" -name '*.pt' > shards.txt
+python scripts/make_profile_batch.py \
+    --manifest shards.txt \
+    --m8-dir <foldseek_results> \
+    --input-base "${SUBSET_DIR}" \
+    --output-dir "${SHARDS_WITH_PROFILE}"
+```
+
+Training silently falls back to a zero profile for any shard missing
+`evo_profile`, so check the driver's summary counters (`missing .m8`,
+`all-zero profiles`) rather than assuming success.
 
 ```bash
 # Prereq: source the Zenodo training-data record's config.env, which exports
 # SPLITS_DIR, METADATA_DIR, SUBSET_DIR, and FOLDMAPPER_DATA_BASE.
-export FOLDMAPPER_DATA_BASE="${SUBSET_DIR}"
+# Point the trainer at the profile-augmented tree produced above, not SUBSET_DIR.
+export FOLDMAPPER_DATA_BASE="${SHARDS_WITH_PROFILE}"
 python scripts/train.py \
     --config configs/d256_blosum.yaml \
     --path-for-training-data "${SPLITS_DIR}" \
-    --ted-root "${SUBSET_DIR}/ted" \
+    --ted-root "${SHARDS_WITH_PROFILE}/ted" \
     --ted-metadata "${METADATA_DIR}/ted_metadata.json" \
     --pdb-metadata "${METADATA_DIR}/pdb_metadata.json" \
     --path-for-outputs ./outputs \
@@ -100,8 +127,11 @@ Wrapper scripts will be added alongside the camera-ready release.
 The training-data record (cluster splits + per-chain metadata + the data-prep
 pipeline that materializes the `.pt` shard tree from PDB + TED sources) is
 released separately as a Zenodo deposit; see `docs/checkpoints.md` for the DOI
-mapping. Each `.pt` shard contains backbone coords, the native sequence, and a
-cached `evo_profile` tensor in Foldseek AA order
+mapping. The record ships splits, metadata, and the data-prep pipeline; the
+shards themselves are regenerated from public PDB + TED sources and contain
+backbone coords and the native sequence. The `evo_profile` tensor consumed by
+the trainer is FoldMapper-specific and is produced by
+`scripts/make_profile_batch.py` in Foldseek AA order
 (`A C D E F G H I K L M N P Q R S T V W Y X`).
 
 ## Citation
