@@ -1,8 +1,9 @@
 # Checkpoints
 
-Checkpoints are distributed via Zenodo once the paper is accepted. Each
-variant has one `epoch_last.pt` file (final epoch) plus the corresponding
-training `log.txt` for reproducibility.
+Checkpoints are distributed via Zenodo once the paper is accepted, as four
+independent files so you can download only the variant you need. They are
+inference-ready weights: optimizer state and training bookkeeping have been
+stripped.
 
 | Variant           | File                            | `use_blosum` | `s1_hidden_dim` (`d_s1`) |
 |-------------------|---------------------------------|-------------:|-------------------------:|
@@ -30,15 +31,17 @@ print(model.config)
 
 ```
 {
-  "epoch":              int,
-  "step":               int,
-  "num_edges":          int,    # Stage 2 top-k, for eval-time override
-  "noise_level":        float,
-  "model_state_dict":   dict,
-  "optimizer_state_dict": dict,
-  "config":             dict    # FoldMapperConfig as dict
-}
+  "model_state_dict": dict,
+  "num_edges":        int,    # Stage 2 top-k, for eval-time override
+  "noise_level":      float,
+  "config":           dict    # FoldMapperConfig as dict; absent in
+}                             # foldmapper_d512.pt, where the architecture
+                              # is inferred from the weights instead
 ```
+
+All four released variants share `hidden_dim` 512, 3 encoder + 3 decoder
+layers, `k_neighbors` 48, `num_edges` 48, `noise_level` 0.2, `dropout` 0.0.
+Parameter counts: 29.5 M (d256 variants), 40.0 M (d512 variants).
 
 Weight keys follow the new paper-aligned naming:
 
