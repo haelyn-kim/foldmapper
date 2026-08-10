@@ -50,8 +50,11 @@ Weight keys follow the new paper-aligned naming:
 ## Foldseek database version
 
 Training profiles were generated against `Foldseek PDB100` using
-`foldseek databases PDB100`. The exact download date and Foldseek version
-are recorded here for reproducibility (fill in before release):
+`foldseek databases PDB100`, with
+`foldseek easy-search --alignment-type 0 --max-seqs 100 -e 10`. The exact
+versions are recorded here for reproducibility:
 
-- Foldseek version: *(fill in)*
-- PDB100 snapshot date: *(fill in)*
+- Foldseek version: 10.941cd33 (v10)
+- PDB100 snapshot date: 2025-01-01 (PDB_DATE 250101)
+- pdb100.tar.gz md5: aefd75e0a5d6acbe8a2b7791b53eb479
+- DB build (foldseek databases PDB100) commit: 1815f0d76d7b5807e63b13f9d446dcef43c1f3b1
