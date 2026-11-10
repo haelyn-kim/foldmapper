@@ -21,15 +21,15 @@ pip install -e .
 
 ## Model variants
 
-| Variant           | `d_s1` | BLOSUM62 Stage-1 bias | Config                          |
-|-------------------|-------:|-----------------------|---------------------------------|
-| FoldMapper-d256   |    256 | off                   | `configs/d256.yaml`             |
-| FoldMapper-d512   |    512 | off                   | `configs/d512.yaml`             |
-| FoldMapper-d256-B |    256 | on                    | `configs/d256_blosum.yaml`      |
-| FoldMapper-d512-B |    512 | on                    | `configs/d512_blosum.yaml`      |
+| Paper label             | `d_s1` | BLOSUM62 Stage-1 bias | Config                     |
+|-------------------------|-------:|-----------------------|----------------------------|
+| FoldMapper-29.5M        |    256 | off                   | `configs/d256.yaml`        |
+| FoldMapper-40.0M        |    512 | off                   | `configs/d512.yaml`        |
+| FoldMapper-29.5M+BLOSUM |    256 | on                    | `configs/d256_blosum.yaml` |
+| FoldMapper-40.0M+BLOSUM |    512 | on                    | `configs/d512_blosum.yaml` |
 
 Checkpoints are distributed separately. See `docs/checkpoints.md` for the
-variant ↔ Zenodo DOI mapping (available once the manuscript is accepted).
+variant ↔ Zenodo DOI mapping.
 
 ## Quickstart: single PDB → sequences
 
@@ -136,14 +136,8 @@ the trainer is FoldMapper-specific and is produced by
 
 ## Citation
 
-```
-@article{foldmapper,
-  title  = {FoldMapper},
-  author = {Kim, Haelyn and colleagues},
-  year   = {2026},
-  journal= {Nature Communications (submitted)}
-}
-```
+If you use FoldMapper, please cite the FoldMapper paper (Kim et al., 2026).
+The full reference and DOI are added here once the preprint is posted.
 
 ## License & attribution
 

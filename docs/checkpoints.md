@@ -1,20 +1,19 @@
 # Checkpoints
 
-Checkpoints are distributed via Zenodo once the paper is accepted, as four
-independent files so you can download only the variant you need. They are
-inference-ready weights: optimizer state and training bookkeeping have been
-stripped.
+Checkpoints are distributed via Zenodo as four independent files, so you can
+download only the variant you need. They are inference-ready weights: optimizer
+state and training bookkeeping have been stripped.
 
-| Variant           | File                            | `use_blosum` | `s1_hidden_dim` (`d_s1`) |
-|-------------------|---------------------------------|-------------:|-------------------------:|
-| FoldMapper-d256   | `foldmapper_d256.pt`            |        false |                      256 |
-| FoldMapper-d512   | `foldmapper_d512.pt`            |        false |                      512 |
-| FoldMapper-d256-B | `foldmapper_d256_blosum.pt`     |         true |                      256 |
-| FoldMapper-d512-B | `foldmapper_d512_blosum.pt`     |         true |                      512 |
+| Paper label             | File                        | `use_blosum` | `s1_hidden_dim` (`d_s1`) |
+|-------------------------|-----------------------------|-------------:|-------------------------:|
+| FoldMapper-29.5M        | `foldmapper_d256.pt`        |        false |                      256 |
+| FoldMapper-40.0M        | `foldmapper_d512.pt`        |        false |                      512 |
+| FoldMapper-29.5M+BLOSUM | `foldmapper_d256_blosum.pt` |         true |                      256 |
+| FoldMapper-40.0M+BLOSUM | `foldmapper_d512_blosum.pt` |         true |                      512 |
 
 ## Zenodo
 
-DOI: *(to be assigned at paper acceptance)*
+DOI: *(to be assigned)*
 
 ## Manual loading
 
@@ -41,9 +40,9 @@ print(model.config)
 
 All four released variants share `hidden_dim` 512, 3 encoder + 3 decoder
 layers, `k_neighbors` 48, `num_edges` 48, `noise_level` 0.2, `dropout` 0.0.
-Parameter counts: 29.5 M (d256 variants), 40.0 M (d512 variants).
+Parameter counts: 29.5 M at `d_s1` 256, 40.0 M at 512.
 
-Weight keys follow the new paper-aligned naming:
+The model parameter names are:
 
 - Stage 1: `s1_features.*`, `s1_W_p.*`, `s1_W_t.*` (BLOSUM variants only),
   `s1_W_e.*`, `s1_encoder_layers.*`, `projection.*`, `blosum62_prob` (buffer).
