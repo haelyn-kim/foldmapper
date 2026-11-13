@@ -13,7 +13,7 @@ state and training bookkeeping have been stripped.
 
 ## Zenodo
 
-DOI: *(to be assigned)*
+DOI: 10.5281/zenodo.24186465
 
 ## Manual loading
 

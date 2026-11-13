@@ -124,13 +124,18 @@ Wrapper scripts will be added alongside the camera-ready release.
 
 ## Data
 
-The training-data record (cluster splits + per-chain metadata + the data-prep
-pipeline that materializes the `.pt` shard tree from PDB + TED sources) is
-released separately as a Zenodo deposit; see `docs/checkpoints.md` for the DOI
-mapping. The record ships splits, metadata, and the data-prep pipeline; the
-shards themselves are regenerated from public PDB + TED sources and contain
-backbone coords and the native sequence. The `evo_profile` tensor consumed by
-the trainer is FoldMapper-specific and is produced by
+| Zenodo record | DOI |
+|---|---|
+| FoldMapper training data v1.0.0 | 10.5281/zenodo.24186409 |
+| TEDMonoBench v1 | 10.5281/zenodo.24186015 |
+| PPIBindBench v1 | 10.5281/zenodo.24186334 |
+| FoldMapper checkpoints v1.0.0 | 10.5281/zenodo.24186465 |
+
+The training-data record holds the cluster splits, the per-chain metadata, and
+the data-prep pipeline that materializes the `.pt` shard tree from PDB + TED
+sources. The shards themselves are regenerated from public PDB + TED sources
+and contain backbone coords and the native sequence. The `evo_profile` tensor
+consumed by the trainer is FoldMapper-specific and is produced by
 `scripts/make_profile_batch.py` in Foldseek AA order
 (`A C D E F G H I K L M N P Q R S T V W Y X`).
 
