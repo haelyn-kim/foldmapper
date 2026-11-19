@@ -2,11 +2,16 @@
 
 Structure-based evolutionary-profile inverse folding.
 
-FoldMapper is a two-stage graph neural network for protein inverse folding.
-Stage 1 distils a per-residue evolutionary profile (obtained by Foldseek
-structural alignment of the query against a structure database) into node
-features over the backbone graph. Stage 2 is a graph encoder/decoder that
-autoregressively samples a sequence consistent with the backbone + profile.
+![FoldMapper architecture](docs/architecture.png)
+
+FoldMapper is a multiscale graph neural network for protein inverse folding.
+Foldseek retrieves structural homologues of the query backbone, and the top 100
+aligned hits are accumulated into an `L x 21` structural position-specific
+frequency (SPSF) profile. The Multiscale Graph Encoder (MGE) builds two
+k-nearest-neighbour graphs over the same backbone: Stage 1 (`k=30`) initialises
+its node features from the profile, while Stage 2 (`k=48`) conditions on
+backbone geometry alone and feeds the autoregressive decoder that samples the
+sequence. The figure is Fig. 1 of the paper; click to enlarge.
 
 ## Installation
 
