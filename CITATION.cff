@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use FoldMapper, please cite the preprint below."
+type: software
+title: "FoldMapper"
+abstract: "Protein inverse folding conditioned on structural position-specific frequency (SPSF) profiles, retrieved by Foldseek structural homology search and encoded by a Multiscale Graph Encoder."
+authors:
+  - family-names: "Kim"
+    given-names: "Haelyn"
+    orcid: "https://orcid.org/0009-0004-6369-0181"
+  - family-names: "Lee"
+    given-names: "Juyong"
+license: "Apache-2.0"
+repository-code: "https://github.com/haelyn-kim/foldmapper"
+keywords:
+  - protein inverse folding
+  - protein design
+  - structural position-specific frequency profile
+  - graph neural network
+  - deep learning
+preferred-citation:
+  type: article
+  status: preprint
+  title: "FoldMapper: Protein Inverse Folding Model with Structure-Derived Evolutionary Profiles and a Multiscale Graph Encoder"
+  authors:
+    - family-names: "Kim"
+      given-names: "Haelyn"
+      orcid: "https://orcid.org/0009-0004-6369-0181"
+    - family-names: "Lee"
+      given-names: "Juyong"
+  journal: "bioRxiv"
+  year: 2026
+  month: 11
+  doi: "10.64898/2026.11.15.766879"
+  url: "https://www.biorxiv.org/content/10.64898/2026.11.15.766879v1"

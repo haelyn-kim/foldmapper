@@ -146,8 +146,24 @@ produced by `scripts/make_profile_batch.py` in Foldseek AA order
 
 ## Citation
 
-If you use FoldMapper, please cite the FoldMapper paper (Kim et al., 2026).
-The full reference and DOI are added here once the preprint is posted.
+If you use FoldMapper, please cite the preprint:
+
+> Kim, H. and Lee, J. FoldMapper: Protein Inverse Folding Model with
+> Structure-Derived Evolutionary Profiles and a Multiscale Graph Encoder.
+> *bioRxiv* (2026). doi:[10.64898/2026.11.15.766879](https://doi.org/10.64898/2026.11.15.766879)
+
+```bibtex
+@article{kim2026foldmapper,
+  title   = {{FoldMapper}: Protein Inverse Folding Model with Structure-Derived
+             Evolutionary Profiles and a Multiscale Graph Encoder},
+  author  = {Kim, Haelyn and Lee, Juyong},
+  journal = {bioRxiv},
+  year    = {2026},
+  doi     = {10.64898/2026.11.15.766879}
+}
+```
+
+`CITATION.cff` carries the same reference in machine-readable form.
 
 ## License & attribution
 
