@@ -1,8 +1,8 @@
-"""FoldMapper: two-stage graph inverse folding with a structure-derived evolutionary profile prior.
+"""FoldMapper: multiscale graph inverse folding with a structure-derived SPSF profile prior.
 
 Stage 1 (evolutionary encoder) builds a k-nearest-neighbour graph over Calpha
-atoms (k=30, edge dimension 128) and projects the per-residue Foldseek
-alignment profile through W_p into node features of dimension ``d_s1``.
+atoms (k=30, edge dimension 128) and projects the per-residue SPSF profile
+through W_p into node features of dimension ``d_s1``.
 Optionally, a BLOSUM62-transformed copy of the profile is added through W_t to
 provide a substitution prior. Three encoder layers refine the node/edge
 representations.

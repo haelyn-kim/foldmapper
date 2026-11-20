@@ -1,8 +1,11 @@
-"""Foldseek-based evolutionary profile utilities.
+"""Foldseek-based SPSF profile utilities.
+
+SPSF = structural position-specific frequency: the per-residue amino-acid
+profile accumulated from the query's structural homologues.
 
 Pipeline:
     PDB/CIF query  --(foldseek easy-search)-->  .m8 alignments  -->
-    per-position amino-acid profile in Foldseek alphabet (A C D E F G H I K L M N P Q R S T V W Y X)
+    per-position SPSF profile in Foldseek alphabet (A C D E F G H I K L M N P Q R S T V W Y X)
 """
 
 from __future__ import annotations

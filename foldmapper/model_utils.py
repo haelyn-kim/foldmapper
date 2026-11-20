@@ -1,8 +1,8 @@
 """Core graph layers and featurization for FoldMapper.
 
 See ``NOTICE`` for third-party attributions. FoldMapper-specific change here:
-``featurize`` carries an optional ``evo_profile`` tensor for the Stage-1
-evolutionary input pathway.
+``featurize`` carries an optional ``evo_profile`` tensor (the SPSF profile)
+for the Stage-1 evolutionary input pathway.
 """
 
 from __future__ import annotations
@@ -117,7 +117,7 @@ def featurize(batch, device):
         indices = np.asarray([alphabet.index(a) for a in all_sequence], dtype=np.int32)
         S[i, :L] = indices
 
-        # Optional evolutionary profile (first masked chain only).
+        # Optional SPSF profile (first masked chain only).
         if "evo_profile" in b and b["evo_profile"] is not None:
             ep = b["evo_profile"]
             if hasattr(ep, "numpy"):
