@@ -20,15 +20,16 @@ and checkpoint; nothing is hard-coded.
    ```
 
 3. **A checkpoint.** Slim checkpoints for the four released variants are
-   attached to the GitHub release. Default to `foldmapper_d256.pt` unless
-   you need a specific architecture/regularisation:
+   deposited on Zenodo; see [`../docs/checkpoints.md`](../docs/checkpoints.md)
+   for the DOI and the full variant mapping. Default to `foldmapper_d256.pt`
+   unless you need a specific architecture/regularisation:
 
-   | File | Stage 1 / Stage 2 dim | BLOSUM62 |
+   | File | `d_s1` / `d_s2` | BLOSUM62 |
    |---|---|---|
-   | `foldmapper_d256.pt`        | 256 / 256 | no  |
-   | `foldmapper_d256_blosum.pt` | 256 / 256 | yes |
-   | `foldmapper_d512.pt`        | 256 / 512 | no  |
-   | `foldmapper_d512_blosum.pt` | 256 / 512 | yes |
+   | `foldmapper_d256.pt`        | 256 / 512 | no  |
+   | `foldmapper_d256_blosum.pt` | 256 / 512 | yes |
+   | `foldmapper_d512.pt`        | 512 / 512 | no  |
+   | `foldmapper_d512_blosum.pt` | 512 / 512 | yes |
 
 ## Common environment
 
