@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Sample sequences from a backbone using a FoldMapper checkpoint.
 
-Two ways to provide the evolutionary profile:
+Two ways to provide the SPSF profile:
 
   1. ``--profile profile.npy``   : precomputed ``[L, 21]`` array.
   2. ``--foldseek-db DB``         : run Foldseek at call time on ``--pdb``.

@@ -2,7 +2,7 @@
 """Design binder sequences for a fixed target structure.
 
 The binder chain is fully redesigned while the target chain provides fixed
-structural context (chain_M = 0). Evolutionary profiles can be supplied via
+structural context (chain_M = 0). SPSF profiles can be supplied via
 a precomputed .npy file or generated on-the-fly with Foldseek (searched
 against the binder chain only).
 

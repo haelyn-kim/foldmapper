@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Build a FoldMapper-compatible Foldseek evolutionary profile.
+# Build a FoldMapper-compatible SPSF profile with Foldseek.
 #
 # Usage:
 #   bash scripts/make_profile.sh <input.pdb|.cif> <foldseek_db> <output_dir> [topk=100] [threads=4]
 #
 # Outputs (in <output_dir>):
 #   <basename>.m8          raw Foldseek alignments (alignment-type 0, 3Di)
-#   <basename>.npy         [L, 21] per-position profile in Foldseek alphabet
+#   <basename>.npy         [L, 21] per-position SPSF profile in Foldseek alphabet
 #
 # Requires: foldseek (>= v10) on PATH, python with the foldmapper package importable.
 
