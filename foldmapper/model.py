@@ -95,7 +95,7 @@ def _remap_legacy_state_dict(state_dict: dict) -> dict:
 
 
 class FoldMapper(nn.Module):
-    """FoldMapper two-stage inverse-folding network."""
+    """FoldMapper multiscale inverse-folding network."""
 
     def __init__(self, config: Optional[FoldMapperConfig] = None, **overrides):
         super().__init__()
