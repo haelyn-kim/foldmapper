@@ -11,9 +11,9 @@ and checkpoint; nothing is hard-coded.
    pip install -e .
    ```
 
-2. **Foldseek + PDB100 database** for evolutionary profiles. FoldMapper is
-   trained against the official Foldseek PDB100 DB; install Foldseek (>= v10)
-   and download/index the DB once:
+2. **Foldseek + PDB100 database** for structural position-specific frequency
+   (SPSF) profiles. FoldMapper is trained against the official Foldseek PDB100
+   DB; install Foldseek (>= v10) and download/index the DB once:
    ```bash
    # https://github.com/steineggerlab/foldseek
    foldseek databases PDB100 /path/to/pdb100_db /path/to/tmp
@@ -65,7 +65,7 @@ If you want to inspect or cache the profile before sampling:
 
 ```bash
 bash scripts/make_profile.sh input.pdb "$FOLDSEEK_DB" ./profile_out
-# -> ./profile_out/input.npy  (per-position [L, 21] Foldseek-AA profile)
+# -> ./profile_out/input.npy  (per-position [L, 21] SPSF profile, Foldseek AA order)
 ```
 
 The sampling scripts can consume this via `--profile path/to/input.npy`

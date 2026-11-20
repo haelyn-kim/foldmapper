@@ -1,6 +1,6 @@
 # FoldMapper
 
-Structure-based evolutionary-profile inverse folding.
+Inverse folding with structural position-specific frequency (SPSF) profiles.
 
 ![FoldMapper architecture](docs/architecture.png)
 
@@ -39,7 +39,7 @@ variant ↔ Zenodo DOI mapping.
 ## Quickstart: single PDB → sequences
 
 ```bash
-# 1. Build a Foldseek evolutionary profile (requires the PDB100 database, ~20 GB)
+# 1. Build the SPSF profile with Foldseek (requires the PDB100 database, ~20 GB)
 #    See "Foldseek database" below for the exact download command.
 bash scripts/make_profile.sh input.pdb /path/to/foldseek_db/pdb profiles/
 
@@ -78,7 +78,7 @@ metadata, and the pipeline that materializes the PDB/TED `.pt` shard tree are
 distributed as a separate Zenodo record — see the "Data" section below.
 
 The shards that pipeline produces carry backbone coordinates and the native
-sequence. FoldMapper additionally conditions on a cached Foldseek profile, which
+sequence. FoldMapper additionally conditions on a cached SPSF profile, which
 is not part of the dataset record — generate it before training:
 
 ```bash
@@ -140,8 +140,8 @@ The training-data record holds the cluster splits, the per-chain metadata, and
 the data-prep pipeline that materializes the `.pt` shard tree from PDB + TED
 sources. The shards themselves are regenerated from public PDB + TED sources
 and contain backbone coords and the native sequence. The `evo_profile` tensor
-consumed by the trainer is FoldMapper-specific and is produced by
-`scripts/make_profile_batch.py` in Foldseek AA order
+(the SPSF profile) consumed by the trainer is FoldMapper-specific and is
+produced by `scripts/make_profile_batch.py` in Foldseek AA order
 (`A C D E F G H I K L M N P Q R S T V W Y X`).
 
 ## Citation

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "foldmapper"
 version = "0.1.0"
-description = "FoldMapper: structure-based evolutionary-profile inverse folding."
+description = "FoldMapper: inverse folding with structural position-specific frequency (SPSF) profiles."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE"}
