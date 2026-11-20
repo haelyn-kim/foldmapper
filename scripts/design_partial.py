@@ -12,7 +12,7 @@ Chain specification
 
 Profile support
 ---------------
-A single Foldseek profile ``[L_chain, 21]`` can be provided for the first
+A single SPSF profile ``[L_chain, 21]`` can be provided for the first
 chain listed in ``--chains-to-design`` (or for the tied group). For tied
 designs the profile is broadcast to all tied chain slices in the tensor.
 
@@ -293,7 +293,7 @@ def main():
             file=sys.stderr,
         )
 
-    # Build evolutionary profile tensor if provided.
+    # Build SPSF profile tensor if provided.
     first_design_chain = design_chains[0]
     first_chain_len = design_lens[first_design_chain]
     profile_np = _load_profile(args, first_chain_len)

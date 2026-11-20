@@ -15,13 +15,13 @@ components appear in:
   foldmapper/model_utils.py
       ProteinFeatures, EncLayer, DecLayer, PositionWiseFeedForward,
       PositionalEncodings; gather_edges, gather_nodes, gather_nodes_t,
-      cat_neighbors_nodes; featurize (extended with an evolutionary-profile
+      cat_neighbors_nodes; featurize (extended with an SPSF-profile
       tensor); loss_nll, loss_smoothed; NoamOpt, get_std_opt.
 
   foldmapper/utils.py
       StructureDataset, StructureLoader, worker_init_fn; build_training_clusters;
       get_pdbs, PDB_dataset (extended to consume PDB + TED shards and a cached
-      per-residue evolutionary-profile tensor).
+      per-residue SPSF-profile tensor).
 
 These components are used under the MIT License reproduced below.
 

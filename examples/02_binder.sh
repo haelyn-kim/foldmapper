@@ -8,7 +8,7 @@
 #   FOLDSEEK_DB=/path/to/pdb100_db \
 #   bash examples/02_binder.sh
 #
-# The Foldseek profile is built from the binder chain only (the target is
+# The SPSF profile is built from the binder chain only (the target is
 # present as structural context but not redesigned).
 #
 # Optional env vars:
