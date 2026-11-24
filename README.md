@@ -53,8 +53,9 @@ FoldMapper is trained and evaluated against this official PDB100 database.
 
 ## Quickstart
 
-Sample sequences for a single-chain backbone. Any of the four checkpoints
-works; see [Model variants](#model-variants) below.
+Sample sequences for a single-chain backbone. Download any of the four
+checkpoints from Zenodo first ([`docs/checkpoints.md`](docs/checkpoints.md));
+they differ only as [Model variants](#model-variants) describes.
 
 ```bash
 # 1. Build the SPSF profile with Foldseek
