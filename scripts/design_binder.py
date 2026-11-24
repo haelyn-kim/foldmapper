@@ -10,7 +10,7 @@ Example
 -------
 python scripts/design_binder.py \\
     --pdb complex.pdb --binder-chain B --target-chain A \\
-    --checkpoint model.pt --foldseek-db /path/to/foldseek_db \\
+    --checkpoint model.pt --foldseek-db /path/to/pdb100_db \\
     --n-samples 50 --temperature 0.1 --output-fasta designs.fa
 """
 

@@ -11,7 +11,7 @@ training-data record this is ``${SUBSET_DIR}``).
 Typical call (with the Zenodo training-data record sourced via ``config.env``):
     export FOLDMAPPER_DATA_BASE="${SUBSET_DIR}"
     python scripts/train.py \\
-        --config configs/d256_blosum.yaml \\
+        --config configs/d256.yaml \\
         --path-for-training-data "${SPLITS_DIR}" \\
         --ted-root "${SUBSET_DIR}/ted" \\
         --ted-metadata "${METADATA_DIR}/ted_metadata.json" \\

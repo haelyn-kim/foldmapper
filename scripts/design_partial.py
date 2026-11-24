@@ -21,13 +21,13 @@ Example
 # Homodimer: design both chains with the same sequence
 python scripts/design_partial.py \\
     --pdb dimer.pdb --chains-to-design A,B --tie-chains A,B \\
-    --checkpoint model.pt --foldseek-db /path/to/foldseek_db \\
+    --checkpoint model.pt --foldseek-db /path/to/pdb100_db \\
     --n-samples 50 --temperature 0.1
 
 # Asymmetric partial redesign: redesign chain B, keep A and C fixed
 python scripts/design_partial.py \\
     --pdb complex.pdb --chains-to-design B --context-chains A,C \\
-    --checkpoint model.pt --foldseek-db /path/to/foldseek_db \\
+    --checkpoint model.pt --foldseek-db /path/to/pdb100_db \\
     --n-samples 20
 """
 
