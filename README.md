@@ -11,7 +11,7 @@ frequency (SPSF) profile. The Multiscale Graph Encoder (MGE) builds two
 k-nearest-neighbour graphs over the same backbone: Stage 1 (`k=30`) initialises
 its node features from the profile, while Stage 2 (`k=48`) conditions on
 backbone geometry alone and feeds the autoregressive decoder that samples the
-sequence. The figure is Fig. 1 of the paper; click to enlarge.
+sequence. The figure is Fig. 1 of [the paper](#citation); click to enlarge.
 
 ## Contents
 
@@ -46,7 +46,7 @@ database itself is not redistributed here — fetch it once from the upstream
 source:
 
 ```bash
-foldseek databases PDB100 /path/to/db tmp  # ~20 GB
+foldseek databases PDB100 /path/to/pdb100_db tmp  # ~20 GB
 ```
 
 FoldMapper is trained and evaluated against this official PDB100 database.
@@ -59,13 +59,13 @@ they differ only as [Model variants](#model-variants) describes.
 
 ```bash
 # 1. Build the SPSF profile with Foldseek
-bash scripts/make_profile.sh input.pdb /path/to/foldseek_db/pdb profiles/
+bash scripts/make_profile.sh input.pdb /path/to/pdb100_db profiles/
 
 # 2. Sample 100 sequences at temperature 0.1
 python scripts/sample.py \
     --pdb input.pdb \
     --profile profiles/input.npy \
-    --checkpoint /path/to/foldmapper_d256_blosum.pt \
+    --checkpoint /path/to/foldmapper_d256.pt \
     --n-samples 100 \
     --temperature 0.1 \
     --output-fasta samples.fasta
@@ -131,7 +131,7 @@ Training silently falls back to a zero profile for any shard missing
 # Point the trainer at the profile-augmented tree produced above, not SUBSET_DIR.
 export FOLDMAPPER_DATA_BASE="${SHARDS_WITH_PROFILE}"
 python scripts/train.py \
-    --config configs/d256_blosum.yaml \
+    --config configs/d256.yaml \
     --path-for-training-data "${SPLITS_DIR}" \
     --ted-root "${SHARDS_WITH_PROFILE}/ted" \
     --ted-metadata "${METADATA_DIR}/ted_metadata.json" \
