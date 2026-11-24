@@ -13,10 +13,21 @@ its node features from the profile, while Stage 2 (`k=48`) conditions on
 backbone geometry alone and feeds the autoregressive decoder that samples the
 sequence. The figure is Fig. 1 of the paper; click to enlarge.
 
+## Contents
+
+- [Installation](#installation)
+- [Quickstart](#quickstart)
+- [Model variants](#model-variants)
+- [Design tasks](#design-tasks)
+- [Training](#training)
+- [Reproducing paper tables](#reproducing-paper-tables)
+- [Data](#data)
+- [Citation](#citation)
+- [License and attribution](#license-and-attribution)
+
 ## Installation
 
-Requires Python 3.9+, PyTorch 2.3.1 (CUDA 12.1 tested), and Foldseek (only
-needed to generate new profiles).
+Requires Python 3.9+ and PyTorch 2.3.1 (CUDA 12.1 tested).
 
 ```bash
 conda env create -f environment.yml
@@ -24,23 +35,29 @@ conda activate foldmapper
 pip install -e .
 ```
 
-## Model variants
+### Foldseek database
 
-| Paper label             | `d_s1` | BLOSUM62 Stage-1 bias | Config                     |
-|-------------------------|-------:|-----------------------|----------------------------|
-| FoldMapper-29.5M        |    256 | off                   | `configs/d256.yaml`        |
-| FoldMapper-40.0M        |    512 | off                   | `configs/d512.yaml`        |
-| FoldMapper-29.5M+BLOSUM |    256 | on                    | `configs/d256_blosum.yaml` |
-| FoldMapper-40.0M+BLOSUM |    512 | on                    | `configs/d512_blosum.yaml` |
+Every SPSF profile comes from a Foldseek search, so unless you are given
+precomputed profiles you also need the database.
 
-Checkpoints are distributed separately. See `docs/checkpoints.md` for the
-variant ↔ Zenodo DOI mapping.
-
-## Quickstart: single PDB → sequences
+`environment.yml` already installs the Foldseek binary (v10 or newer); if you
+installed some other way, `conda install -c bioconda foldseek`. The PDB100
+database itself is not redistributed here — fetch it once from the upstream
+source:
 
 ```bash
-# 1. Build the SPSF profile with Foldseek (requires the PDB100 database, ~20 GB)
-#    See "Foldseek database" below for the exact download command.
+foldseek databases PDB100 /path/to/db tmp  # ~20 GB
+```
+
+FoldMapper is trained and evaluated against this official PDB100 database.
+
+## Quickstart
+
+Sample sequences for a single-chain backbone. Any of the four checkpoints
+works; see [Model variants](#model-variants) below.
+
+```bash
+# 1. Build the SPSF profile with Foldseek
 bash scripts/make_profile.sh input.pdb /path/to/foldseek_db/pdb profiles/
 
 # 2. Sample 100 sequences at temperature 0.1
@@ -58,24 +75,31 @@ case the profile is generated on the fly. If neither is supplied, the model
 runs in backbone-only mode (the same regime triggered by `profile_dropout`
 during training).
 
-For the other design tasks (binder redesign, tied homo-oligomer, fixed-residue
-motif scaffolding), see `examples/` — one runnable shell script per scenario.
+## Model variants
 
-## Foldseek database
+| Paper label             | `d_s1` | BLOSUM62 Stage-1 bias | Config                     |
+|-------------------------|-------:|-----------------------|----------------------------|
+| FoldMapper-29.5M        |    256 | off                   | `configs/d256.yaml`        |
+| FoldMapper-40.0M        |    512 | off                   | `configs/d512.yaml`        |
+| FoldMapper-29.5M+BLOSUM |    256 | on                    | `configs/d256_blosum.yaml` |
+| FoldMapper-40.0M+BLOSUM |    512 | on                    | `configs/d512_blosum.yaml` |
 
-FoldMapper is trained and evaluated against the official Foldseek PDB100
-database. We do not redistribute it; use the upstream source:
+Checkpoints are distributed separately. See
+[`docs/checkpoints.md`](docs/checkpoints.md) for the variant ↔ Zenodo DOI
+mapping.
 
-```bash
-conda install -c bioconda foldseek         # v10 or newer
-foldseek databases PDB100 /path/to/db tmp  # ~20 GB
-```
+## Design tasks
+
+Beyond single-chain sampling, `examples/` holds one runnable script per
+scenario — binder redesign, tied homo-oligomer design, and fixed-residue motif
+scaffolding. See [`examples/README.md`](examples/README.md) for what each
+script expects.
 
 ## Training
 
 Reproduces the paper training run for any variant. The cluster splits, per-chain
 metadata, and the pipeline that materializes the PDB/TED `.pt` shard tree are
-distributed as a separate Zenodo record — see the "Data" section below.
+distributed as a separate Zenodo record — see [Data](#data) below.
 
 The shards that pipeline produces carry backbone coordinates and the native
 sequence. FoldMapper additionally conditions on a cached SPSF profile, which
@@ -165,7 +189,7 @@ If you use FoldMapper, please cite the preprint:
 
 `CITATION.cff` carries the same reference in machine-readable form.
 
-## License & attribution
+## License and attribution
 
 FoldMapper is released under the Apache License 2.0 (`LICENSE`). Portions
 are adapted from [ProteinMPNN](https://github.com/dauparas/ProteinMPNN)
